@@ -1,0 +1,100 @@
+import { useState } from 'react'
+
+const translations = {
+  hi: {
+    appTitle: "स्वास्थ्य सहायक",
+    appSubtitle: "ग्रामीण स्वास्थ्य प्लेटफॉर्म",
+    tabVoice: "आवाज़",
+    tabNutrition: "पोषण",
+    tabEmergency: "आपातकाल",
+    tabHealth: "स्वास्थ्य",
+    tabChat: "चैट",
+    voiceTitle: "स्वास्थ्य सहायक",
+    speakButton: "बोलें",
+    listening: "सुन रहा है...",
+    listenText: "सुनें",
+    nutritionTitle: "पोषण योजना",
+    familySize: "परिवार का आकार",
+    dailyBudget: "दैनिक बजट ($)",
+    vegetarian: "शाकाहारी",
+    nonVegetarian: "मांसाहारी",
+    vegan: "वीगन",
+    createPlan: "योजना बनाएं",
+    emergencyTitle: "आपातकालीन सहायता",
+    emergency: "आपातकाल",
+    emergencyDesc: "GPS स्थान के साथ तुरंत SMS भेजा जाएगा",
+    healthTitle: "स्वास्थ्य ट्रैकर",
+    addMedicine: "दवा जोड़ें:",
+    medicineName: "दवा का नाम",
+    dosage: "खुराक",
+    addMed: "दवा जोड़ें",
+    todayMedicines: "आज की दवाएं:",
+    healthData: "स्वास्थ्य डेटा:",
+    bloodPressure: "रक्तचाप (जैसे: 120/80)",
+    sugarLevel: "शुगर लेवल",
+    weight: "वजन (kg)",
+    saveData: "डेटा सेव करें",
+    chatTitle: "स्वास्थ्य चैटबॉट",
+    askQuestion: "अपना सवाल पूछें...",
+    send: "भेजें",
+    clearChat: "चैट साफ़ करें",
+    noMedicine: "आज कोई दवा नहीं है।",
+    recentData: "हाल का डेटा:",
+    noHealthData: "कोई स्वास्थ्य डेटा नहीं है।",
+    greeting: "नमस्ते! मैं आपका स्वास्थ्य सहायक हूं। आप मुझसे कुछ भी पूछ सकते हैं।",
+  },
+  en: {
+    appTitle: "Health Assistant",
+    appSubtitle: "Rural Health Platform",
+    tabVoice: "Voice",
+    tabNutrition: "Nutrition",
+    tabEmergency: "Emergency",
+    tabHealth: "Health",
+    tabChat: "Chat",
+    voiceTitle: "Health Assistant",
+    speakButton: "Speak",
+    listening: "Listening...",
+    listenText: "Listen",
+    nutritionTitle: "Nutrition Plan",
+    familySize: "Family Size",
+    dailyBudget: "Daily Budget ($)",
+    vegetarian: "Vegetarian",
+    nonVegetarian: "Non-Vegetarian",
+    vegan: "Vegan",
+    createPlan: "Create Plan",
+    emergencyTitle: "Emergency Help",
+    emergency: "Emergency",
+    emergencyDesc: "GPS location will be sent immediately via SMS",
+    healthTitle: "Health Tracker",
+    addMedicine: "Add Medicine:",
+    medicineName: "Medicine Name",
+    dosage: "Dosage",
+    addMed: "Add Medicine",
+    todayMedicines: "Today's Medicines:",
+    healthData: "Health Data:",
+    bloodPressure: "Blood Pressure (e.g: 120/80)",
+    sugarLevel: "Sugar Level",
+    weight: "Weight (kg)",
+    saveData: "Save Data",
+    chatTitle: "Health Chatbot",
+    askQuestion: "Ask your question...",
+    send: "Send",
+    clearChat: "Clear Chat",
+    noMedicine: "No medicines for today.",
+    recentData: "Recent Data:",
+    noHealthData: "No health data available.",
+    greeting: "Hello! I am your health assistant. You can ask me anything.",
+  }
+}
+
+export const useLanguage = () => {
+  const [currentLanguage, setCurrentLanguage] = useState('hi')
+
+  const changeLanguage = (lang) => {
+    setCurrentLanguage(lang)
+  }
+
+  const t = translations[currentLanguage] || translations.hi
+
+  return { currentLanguage, changeLanguage, t }
+}
