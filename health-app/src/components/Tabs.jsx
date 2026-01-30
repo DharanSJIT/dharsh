@@ -7,6 +7,7 @@ const Tabs = ({ activeTab, t }) => {
     { id: 'emergency', label: t.tabEmergency, icon: '🚨', path: '/emergency' },
     { id: 'health', label: t.tabHealth, icon: '💊', path: '/health' },
     { id: 'chat', label: t.tabChat, icon: '💬', path: '/chat' },
+    { id: 'insights', label: t.tabInsights, icon: '📊', path: '/insights' },
   ]
 
   return (
