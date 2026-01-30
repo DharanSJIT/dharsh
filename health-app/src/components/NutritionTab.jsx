@@ -1,12 +1,82 @@
 import { useState } from 'react'
+import { getHealthAdvice } from '../services/geminiService'
 
 const NutritionTab = ({ t, currentLanguage }) => {
   const [familySize, setFamilySize] = useState(4)
   const [budget, setBudget] = useState(2)
   const [dietaryPref, setDietaryPref] = useState('veg')
   const [mealPlan, setMealPlan] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const generateMealPlan = () => {
+  const generateMealPlan = async () => {
+    setIsLoading(true)
+    
+    const budgetInRs = budget * 80 // Convert $ to ₹
+    
+    const prompt = currentLanguage === 'hi' ?
+      `${familySize} लोगों के परिवार के लिए ₹${budgetInRs} दैनिक बजट में ${dietaryPref === 'veg' ? 'शाकाहारी' : dietaryPref === 'nonveg' ? 'मांसाहारी' : 'वीगन'} भोजन योजना बनाएं। केवल भोजन सुझाव दें:
+
+नाश्ता:
+- व्यंजन का नाम
+- सामग्री
+- लागत (₹ में)
+
+दोपहर का खाना:
+- व्यंजन का नाम
+- सामग्री
+- लागत (₹ में)
+
+रात का खाना:
+- व्यंजन का नाम
+- सामग्री
+- लागत (₹ में)
+
+कुल लागत: ₹___
+
+सरल बिंदुओं में जवाब दें। कोई अतिरिक्त सलाह न दें।` :
+      `Create a ${dietaryPref === 'veg' ? 'vegetarian' : dietaryPref === 'nonveg' ? 'non-vegetarian' : 'vegan'} meal plan for a family of ${familySize} people with a daily budget of ₹${budgetInRs}. Only provide meal suggestions:
+
+Breakfast:
+- Dish name
+- Ingredients
+- Cost (in ₹)
+
+Lunch:
+- Dish name
+- Ingredients
+- Cost (in ₹)
+
+Dinner:
+- Dish name
+- Ingredients
+- Cost (in ₹)
+
+Total Cost: ₹___
+
+Answer in simple bullet points. No additional advice.`
+
+    try {
+      const response = await getHealthAdvice(prompt, currentLanguage)
+      let cleanResponse = response.replace(/\*/g, '').replace(/\$/g, '₹')
+      
+      // Replace standalone numbers with ₹ prefix for costs
+      cleanResponse = cleanResponse.replace(/- (\d+)$/gm, '- ₹$1')
+      cleanResponse = cleanResponse.replace(/Cost: (\d+)/gi, 'Cost: ₹$1')
+      cleanResponse = cleanResponse.replace(/Total Cost: (\d+)/gi, 'Total Cost: ₹$1')
+      
+      setMealPlan({
+        plan: cleanResponse,
+        totalCost: budgetInRs * familySize
+      })
+    } catch (error) {
+      console.error('Error generating meal plan:', error)
+      generateFallbackPlan()
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const generateFallbackPlan = () => {
     const mealsData = {
       hi: {
         meals: [
@@ -68,29 +138,40 @@ const NutritionTab = ({ t, currentLanguage }) => {
         
         <button
           onClick={generateMealPlan}
-          className="w-full p-3 bg-blue-800 text-white border-none rounded-md cursor-pointer text-base font-medium my-2 transition-colors hover:bg-blue-900 active:bg-blue-950"
+          disabled={isLoading}
+          className="w-full p-3 bg-blue-800 text-white border-none rounded-md cursor-pointer text-base font-medium my-2 transition-colors hover:bg-blue-900 active:bg-blue-950 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {t.createPlan}
+          {isLoading ? (currentLanguage === 'hi' ? 'योजना बना रहे हैं...' : 'Creating Plan...') : t.createPlan}
         </button>
       </div>
 
       {mealPlan && (
         <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-4">{mealPlan.todayMeal}</h3>
-          {mealPlan.meals.map((meal, index) => (
-            <div key={index} className="bg-white p-5 my-4 rounded-lg border-l-4 border-green-600 border border-gray-200 shadow-sm">
-              <div className="font-semibold text-base text-gray-800 mb-1">
-                {meal.type}: {meal.name}
+          {mealPlan.plan ? (
+            <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+              <div className="whitespace-pre-line text-gray-800 leading-relaxed">
+                {mealPlan.plan}
               </div>
-              <div className="text-green-600 my-2 font-semibold text-sm">
-                ₹{meal.cost * familySize}
-              </div>
-              <div className="text-gray-600 text-sm">{meal.ingredients}</div>
             </div>
-          ))}
-          <p className="font-bold">
-            {mealPlan.totalCost} ₹{mealPlan.totalCost} ({familySize} {mealPlan.forPeople})
-          </p>
+          ) : (
+            <>
+              <h3 className="text-lg font-semibold mb-4">{mealPlan.todayMeal}</h3>
+              {mealPlan.meals.map((meal, index) => (
+                <div key={index} className="bg-white p-5 my-4 rounded-lg border-l-4 border-green-600 border border-gray-200 shadow-sm">
+                  <div className="font-semibold text-base text-gray-800 mb-1">
+                    {meal.type}: {meal.name}
+                  </div>
+                  <div className="text-green-600 my-2 font-semibold text-sm">
+                    ₹{meal.cost * familySize}
+                  </div>
+                  <div className="text-gray-600 text-sm">{meal.ingredients}</div>
+                </div>
+              ))}
+              <p className="font-bold">
+                {mealPlan.totalCost} ₹{mealPlan.totalCost} ({familySize} {mealPlan.forPeople})
+              </p>
+            </>
+          )}
         </div>
       )}
     </div>
