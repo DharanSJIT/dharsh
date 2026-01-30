@@ -119,6 +119,9 @@ const VoiceTab = ({ currentLanguage, changeLanguage, t }) => {
     try {
       const response = await getHealthAdvice(query, currentLanguage)
       
+      // Remove asterisks from response
+      const cleanResponse = response.replace(/\*/g, '')
+      
       const questionLabels = {
         hi: "आपका सवाल:",
         en: "Your Question:",
@@ -136,7 +139,7 @@ const VoiceTab = ({ currentLanguage, changeLanguage, t }) => {
       const questionLabel = questionLabels[currentLanguage] || questionLabels.hi
       const suggestionLabel = suggestionLabels[currentLanguage] || suggestionLabels.hi
 
-      setResult(`${questionLabel} ${query}\n\n${suggestionLabel} ${response}`)
+      setResult(`${questionLabel} ${query}\n\n${suggestionLabel} ${cleanResponse}`)
       setShowResult(true)
     } catch (error) {
       console.error('Error getting health advice:', error)
