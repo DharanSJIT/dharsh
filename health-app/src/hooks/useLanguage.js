@@ -42,6 +42,7 @@ const translations = {
     recentData: "हाल का डेटा:",
     noHealthData: "कोई स्वास्थ्य डेटा नहीं है।",
     greeting: "नमस्ते! मैं आपका स्वास्थ्य सहायक हूं। आप मुझसे कुछ भी पूछ सकते हैं।",
+    footer: "© 2024 ग्रामीण स्वास्थ्य प्लेटफॉर्म | आपातकाल के लिए: 108",
   },
   en: {
     appTitle: "Health Assistant",
@@ -84,6 +85,7 @@ const translations = {
     recentData: "Recent Data:",
     noHealthData: "No health data available.",
     greeting: "Hello! I am your health assistant. You can ask me anything.",
+    footer: "© 2024 Rural Health Platform | Emergency: 108",
   }
 }
 

@@ -1,20 +1,38 @@
 import { useState } from 'react'
 
-const NutritionTab = ({ t }) => {
+const NutritionTab = ({ t, currentLanguage }) => {
   const [familySize, setFamilySize] = useState(4)
   const [budget, setBudget] = useState(2)
   const [dietaryPref, setDietaryPref] = useState('veg')
   const [mealPlan, setMealPlan] = useState(null)
 
   const generateMealPlan = () => {
-    const meals = [
-      { name: "दाल चावल", cost: 35, ingredients: "दाल, चावल, प्याज", type: "नाश्ता" },
-      { name: "सब्जी रोटी", cost: 28, ingredients: "गेहूं, आलू, टमाटर", type: "दोपहर का खाना" },
-      { name: "खिचड़ी", cost: 32, ingredients: "चावल, दाल, आलू", type: "रात का खाना" }
-    ]
+    const mealsData = {
+      hi: {
+        meals: [
+          { name: "दाल चावल", cost: 35, ingredients: "दाल, चावल, प्याज", type: "नाश्ता" },
+          { name: "सब्जी रोटी", cost: 28, ingredients: "गेहूं, आलू, टमाटर", type: "दोपहर का खाना" },
+          { name: "खिचड़ी", cost: 32, ingredients: "चावल, दाल, आलू", type: "रात का खाना" }
+        ],
+        todayMeal: "आज का भोजन:",
+        totalCost: "कुल लागत:",
+        forPeople: "लोगों के लिए"
+      },
+      en: {
+        meals: [
+          { name: "Dal Rice", cost: 35, ingredients: "Lentils, Rice, Onion", type: "Breakfast" },
+          { name: "Vegetable Roti", cost: 28, ingredients: "Wheat, Potato, Tomato", type: "Lunch" },
+          { name: "Khichdi", cost: 32, ingredients: "Rice, Lentils, Potato", type: "Dinner" }
+        ],
+        todayMeal: "Today's Meal:",
+        totalCost: "Total Cost:",
+        forPeople: "for people"
+      }
+    }
 
-    const totalCost = meals.reduce((sum, meal) => sum + (meal.cost * familySize), 0)
-    setMealPlan({ meals, totalCost })
+    const data = mealsData[currentLanguage] || mealsData.hi
+    const totalCost = data.meals.reduce((sum, meal) => sum + (meal.cost * familySize), 0)
+    setMealPlan({ ...data, totalCost })
   }
 
   return (
@@ -58,7 +76,7 @@ const NutritionTab = ({ t }) => {
 
       {mealPlan && (
         <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-4">आज का भोजन:</h3>
+          <h3 className="text-lg font-semibold mb-4">{mealPlan.todayMeal}</h3>
           {mealPlan.meals.map((meal, index) => (
             <div key={index} className="bg-white p-5 my-4 rounded-lg border-l-4 border-green-600 border border-gray-200 shadow-sm">
               <div className="font-semibold text-base text-gray-800 mb-1">
@@ -71,7 +89,7 @@ const NutritionTab = ({ t }) => {
             </div>
           ))}
           <p className="font-bold">
-            कुल लागत: ₹{mealPlan.totalCost} ({familySize} लोगों के लिए)
+            {mealPlan.totalCost} ₹{mealPlan.totalCost} ({familySize} {mealPlan.forPeople})
           </p>
         </div>
       )}

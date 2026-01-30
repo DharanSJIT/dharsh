@@ -151,6 +151,11 @@ const ChatTab = ({ t, currentLanguage }) => {
     ]
   }
 
+  const quickQuestionsLabel = {
+    hi: "त्वरित प्रश्न:",
+    en: "Quick Questions:"
+  }
+
   const currentQuestions = quickQuestions[currentLanguage] || quickQuestions.hi
 
   return (
@@ -176,7 +181,7 @@ const ChatTab = ({ t, currentLanguage }) => {
       </div>
 
       <div className="mb-4">
-        <p className="text-sm text-gray-600 mb-2">त्वरित प्रश्न:</p>
+        <p className="text-sm text-gray-600 mb-2">{quickQuestionsLabel[currentLanguage] || quickQuestionsLabel.hi}</p>
         <div className="flex flex-wrap gap-2">
           {currentQuestions.map((question, index) => (
             <button

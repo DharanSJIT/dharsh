@@ -51,7 +51,7 @@ function AppContent() {
               } />
               <Route path="/nutrition" element={
                 <div className="card p-8">
-                  <NutritionTab t={t} />
+                  <NutritionTab t={t} currentLanguage={currentLanguage} />
                 </div>
               } />
               <Route path="/emergency" element={
@@ -76,7 +76,7 @@ function AppContent() {
         <footer className="bg-slate-50 border-t border-slate-200 py-6 px-8">
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-slate-600 text-sm">
-              © 2024 ग्रामीण स्वास्थ्य प्लेटफॉर्म | आपातकाल के लिए: 108
+              {t.footer}
             </p>
           </div>
         </footer>
