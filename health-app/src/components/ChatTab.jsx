@@ -4,10 +4,16 @@ import { getHealthAdvice } from '../services/geminiService'
 const ChatTab = ({ t, currentLanguage }) => {
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const [initialized, setInitialized] = useState(false)
   const chatContainerRef = useRef(null)
+  const typingIntervalRef = useRef(null)
 
   useEffect(() => {
-    addMessage(t.greeting, 'bot')
+    if (!initialized) {
+      addMessage(t.greeting, 'bot')
+      setInitialized(true)
+    }
   }, [])
 
   useEffect(() => {
@@ -16,8 +22,62 @@ const ChatTab = ({ t, currentLanguage }) => {
     }
   }, [messages])
 
-  const addMessage = (message, sender) => {
-    setMessages(prev => [...prev, { message, sender, id: Date.now() }])
+  const addMessage = (message, sender, typing = false) => {
+    let cleanMessage = message.replace(/\*/g, '').trim()
+    
+    // Format as bullet points if it's a bot message (but not for greeting)
+    if (sender === 'bot' && !message.includes('health assistant')) {
+      cleanMessage = cleanMessage
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .map((line, index, arr) => {
+          // If line doesn't start with number or bullet, add bullet
+          if (!line.match(/^[0-9•\-]/) && line.length > 0) {
+            line = '• ' + line
+          }
+          // Add extra line break before and after numbered sections (1., 2., 3., 4.)
+          if (line.match(/^[0-9]\./) && index > 0) {
+            line = '\n' + line
+          }
+          if (line.match(/^[0-9]\./) && index < arr.length - 1) {
+            line = line + '\n'
+          }
+          return line
+        })
+        .join('\n')
+    }
+    
+    if (typing && sender === 'bot') {
+      const msgId = Date.now()
+      setMessages(prev => [...prev, { message: '', sender, id: msgId, fullText: cleanMessage }])
+      typeMessage(msgId, cleanMessage)
+    } else {
+      setMessages(prev => [...prev, { message: cleanMessage, sender, id: Date.now() }])
+    }
+  }
+
+  const typeMessage = (msgId, fullText) => {
+    setIsTyping(true)
+    const words = fullText.split(' ')
+    let index = 0
+    
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current)
+    }
+    
+    typingIntervalRef.current = setInterval(() => {
+      if (index < words.length) {
+        const displayText = words.slice(0, index + 1).join(' ')
+        setMessages(prev => prev.map(msg => 
+          msg.id === msgId ? { ...msg, message: displayText } : msg
+        ))
+        index++
+      } else {
+        clearInterval(typingIntervalRef.current)
+        setIsTyping(false)
+      }
+    }, 100)
   }
 
   const generateBotResponse = async (message) => {
@@ -51,14 +111,14 @@ const ChatTab = ({ t, currentLanguage }) => {
   }
 
   const sendMessage = () => {
-    if (inputMessage.trim()) {
+    if (inputMessage.trim() && !isTyping) {
       addMessage(inputMessage, 'user')
       const userMessage = inputMessage
       setInputMessage('')
       
       setTimeout(async () => {
         const response = await generateBotResponse(userMessage)
-        addMessage(response, 'bot')
+        addMessage(response, 'bot', true)
       }, 1000)
     }
   }
@@ -104,7 +164,7 @@ const ChatTab = ({ t, currentLanguage }) => {
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`my-3 p-3 rounded-2xl max-w-4/5 break-words text-sm leading-relaxed ${
+            className={`my-3 p-4 rounded-2xl max-w-4/5 break-words text-sm leading-relaxed whitespace-pre-line ${
               msg.sender === 'user'
                 ? 'bg-blue-800 text-white ml-auto text-right'
                 : 'bg-white text-gray-700 mr-auto border border-gray-200'
@@ -125,7 +185,7 @@ const ChatTab = ({ t, currentLanguage }) => {
                 addMessage(question, 'user')
                 setTimeout(async () => {
                   const response = await generateBotResponse(question)
-                  addMessage(response, 'bot')
+                  addMessage(response, 'bot', true)
                 }, 1000)
               }}
               className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm hover:bg-blue-200 transition-colors"
@@ -147,7 +207,8 @@ const ChatTab = ({ t, currentLanguage }) => {
         />
         <button
           onClick={sendMessage}
-          className="px-6 py-3 bg-blue-800 text-white border-none rounded-full cursor-pointer font-medium transition-colors hover:bg-blue-900 hover:-translate-y-0.5 hover:shadow-md hover:shadow-blue-800/20"
+          disabled={isTyping}
+          className="px-6 py-3 bg-blue-800 text-white border-none rounded-full cursor-pointer font-medium transition-colors hover:bg-blue-900 hover:-translate-y-0.5 hover:shadow-md hover:shadow-blue-800/20 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t.send}
         </button>
