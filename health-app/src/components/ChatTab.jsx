@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { getHealthAdvice } from '../services/geminiService'
 
 const ChatTab = ({ t, currentLanguage }) => {
   const [messages, setMessages] = useState([])
@@ -19,72 +20,33 @@ const ChatTab = ({ t, currentLanguage }) => {
     setMessages(prev => [...prev, { message, sender, id: Date.now() }])
   }
 
-  const generateBotResponse = (message) => {
+  const generateBotResponse = async (message) => {
     const lowerMessage = message.toLowerCase()
     
-    const healthResponses = {
-      hi: {
-        fever: "बुखार के लिए आराम करें, पानी पिएं। 3 दिन से ज्यादा हो तो डॉक्टर से मिलें।",
-        cough: "खांसी के लिए गर्म पानी और शहद लें। लगातार खांसी हो तो जांच कराएं।",
-        headache: "सिरदर्द के लिए आराम करें। तेज दर्द हो तो तुरंत डॉक्टर से मिलें।",
-        stomach: "पेट दर्द के लिए हल्का खाना खाएं। दर्द बढ़े तो डॉक्टर से मिलें।",
-        medicine: "दवा के लिए Health टैब में जाकर अपनी दवाएं जोड़ें और रिमाइंडर सेट करें।",
-        nutrition: "पोषण के लिए Nutrition टैब में जाकर अपने बजट के अनुसार भोजन योजना बनाएं।",
-        emergency: "आपातकाल में Emergency टैब का उपयोग करें या तुरंत 108 पर कॉल करें।",
-        hello: "नमस्ते! मैं आपका स्वास्थ्य सहायक हूं। आप अपनी समस्या बता सकते हैं।",
-        thanks: "धन्यवाद! स्वस्थ रहें और जरूरत पड़ने पर संपर्क करें।",
-        default: "मैं आपकी स्वास्थ्य संबंधी मदद कर सकता हूं। कृपया अपनी समस्या बताएं।"
-      },
-      en: {
-        fever: "For fever, rest and drink fluids. See doctor if fever persists over 3 days.",
-        cough: "For cough, drink warm water and honey. Get checked if cough persists.",
-        headache: "For headache, rest and relax. See doctor immediately for severe pain.",
-        stomach: "For stomach pain, eat light food. See doctor if pain increases.",
-        medicine: "For medicines, go to Health tab to add your medications and set reminders.",
-        nutrition: "For nutrition, go to Nutrition tab to create meal plans based on your budget.",
-        emergency: "In emergency, use Emergency tab or call 108 immediately.",
-        hello: "Hello! I am your health assistant. You can tell me your problems.",
-        thanks: "Thank you! Stay healthy and contact when needed.",
-        default: "I can help with your health concerns. Please describe your problem."
-      }
-    }
-
-    const responses = healthResponses[currentLanguage] || healthResponses.hi
-
-    // Greetings
+    // Handle greetings and thanks locally
     if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || 
         lowerMessage.includes('नमस्ते') || lowerMessage.includes('हैलो')) {
-      return responses.hello
+      return currentLanguage === 'hi' ? 
+        "नमस्ते! मैं आपका स्वास्थ्य सहायक हूं। आप अपनी समस्या बता सकते हैं।" :
+        "Hello! I am your health assistant. You can tell me your problems."
     }
-    // Thanks
-    else if (lowerMessage.includes('thank') || lowerMessage.includes('धन्यवाद') || 
-             lowerMessage.includes('शुक्रिया')) {
-      return responses.thanks
+    
+    if (lowerMessage.includes('thank') || lowerMessage.includes('धन्यवाद') || 
+        lowerMessage.includes('शुक्रिया')) {
+      return currentLanguage === 'hi' ? 
+        "धन्यवाद! स्वस्थ रहें और जरूरत पड़ने पर संपर्क करें।" :
+        "Thank you! Stay healthy and contact when needed."
     }
-    // Health symptoms
-    else if (lowerMessage.includes('बुखार') || lowerMessage.includes('fever')) {
-      return responses.fever
-    } else if (lowerMessage.includes('खांसी') || lowerMessage.includes('cough')) {
-      return responses.cough
-    } else if (lowerMessage.includes('सिरदर्द') || lowerMessage.includes('headache') ||
-               lowerMessage.includes('सिर') || lowerMessage.includes('head')) {
-      return responses.headache
-    } else if (lowerMessage.includes('पेट') || lowerMessage.includes('stomach') ||
-               lowerMessage.includes('पेट दर्द')) {
-      return responses.stomach
-    }
-    // App features
-    else if (lowerMessage.includes('दवा') || lowerMessage.includes('medicine') ||
-             lowerMessage.includes('दवाई')) {
-      return responses.medicine
-    } else if (lowerMessage.includes('खाना') || lowerMessage.includes('nutrition') ||
-               lowerMessage.includes('भोजन') || lowerMessage.includes('आहार')) {
-      return responses.nutrition
-    } else if (lowerMessage.includes('आपातकाल') || lowerMessage.includes('emergency') ||
-               lowerMessage.includes('इमरजेंसी')) {
-      return responses.emergency
-    } else {
-      return responses.default
+    
+    // For health-related queries, use Gemini API
+    try {
+      const response = await getHealthAdvice(message, currentLanguage)
+      return response
+    } catch (error) {
+      console.error('Error getting health advice:', error)
+      return currentLanguage === 'hi' ? 
+        "कृपया अपने स्थानीय स्वास्थ्य कर्मी से संपर्क करें। आपातकाल में 108 डायल करें।" :
+        "Please contact your local health worker. In emergency, dial 108."
     }
   }
 
@@ -94,8 +56,8 @@ const ChatTab = ({ t, currentLanguage }) => {
       const userMessage = inputMessage
       setInputMessage('')
       
-      setTimeout(() => {
-        const response = generateBotResponse(userMessage)
+      setTimeout(async () => {
+        const response = await generateBotResponse(userMessage)
         addMessage(response, 'bot')
       }, 1000)
     }
@@ -161,8 +123,8 @@ const ChatTab = ({ t, currentLanguage }) => {
               key={index}
               onClick={() => {
                 addMessage(question, 'user')
-                setTimeout(() => {
-                  const response = generateBotResponse(question)
+                setTimeout(async () => {
+                  const response = await generateBotResponse(question)
                   addMessage(response, 'bot')
                 }, 1000)
               }}

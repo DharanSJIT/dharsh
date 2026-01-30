@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { getHealthAdvice } from '../services/geminiService'
 
 const VoiceTab = ({ currentLanguage, changeLanguage, t }) => {
   const [isListening, setIsListening] = useState(false)
   const [result, setResult] = useState('')
   const [showResult, setShowResult] = useState(false)
   const [recognition, setRecognition] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const languages = [
     { value: 'hi', label: '🇮🇳 हिंदी (Hindi)' },
@@ -111,7 +113,41 @@ const VoiceTab = ({ currentLanguage, changeLanguage, t }) => {
     return langCodes[lang] || 'hi-IN'
   }
 
-  const processHealthQuery = (query) => {
+  const processHealthQuery = async (query) => {
+    setIsLoading(true)
+    
+    try {
+      const response = await getHealthAdvice(query, currentLanguage)
+      
+      const questionLabels = {
+        hi: "आपका सवाल:",
+        en: "Your Question:",
+        bn: "আপনার প্রশ্ন:",
+        te: "మీ ప్రశ్న:"
+      }
+
+      const suggestionLabels = {
+        hi: "सुझाव:",
+        en: "Suggestion:",
+        bn: "পরামর্শ:",
+        te: "సూచన:"
+      }
+
+      const questionLabel = questionLabels[currentLanguage] || questionLabels.hi
+      const suggestionLabel = suggestionLabels[currentLanguage] || suggestionLabels.hi
+
+      setResult(`${questionLabel} ${query}\n\n${suggestionLabel} ${response}`)
+      setShowResult(true)
+    } catch (error) {
+      console.error('Error getting health advice:', error)
+      // Fallback to original logic if API fails
+      processHealthQueryFallback(query)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const processHealthQueryFallback = (query) => {
     const healthResponses = {
       hi: {
         fever: "आराम करें, पानी पिएं। अगर 3 दिन से ज्यादा बुखार हो तो डॉक्टर से मिलें।",
@@ -224,17 +260,17 @@ const VoiceTab = ({ currentLanguage, changeLanguage, t }) => {
       <div className="text-center py-8">
         <button
           onClick={startVoiceRecognition}
-          disabled={isListening}
+          disabled={isListening || isLoading}
           className={`w-48 h-48 rounded-full text-white border-0 text-xl font-bold cursor-pointer mx-auto block shadow-2xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300 ${
-            isListening
+            isListening || isLoading
               ? 'bg-blue-600 cursor-not-allowed scale-110 shadow-lg'
               : 'bg-red-600 hover:bg-red-700 hover:scale-105 hover:shadow-2xl active:scale-95'
           }`}
         >
           <div className="flex flex-col items-center space-y-2">
-            <span className="text-4xl">{isListening ? '🔊' : '🎤'}</span>
+            <span className="text-4xl">{isLoading ? '⏳' : isListening ? '🔊' : '🎤'}</span>
             <span className="text-lg font-bold">
-              {isListening ? t.listening : t.speakButton}
+              {isLoading ? 'विश्लेषण...' : isListening ? t.listening : t.speakButton}
             </span>
           </div>
         </button>
