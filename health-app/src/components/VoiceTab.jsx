@@ -225,9 +225,9 @@ const VoiceTab = ({ currentLanguage, changeLanguage, t }) => {
         <button
           onClick={startVoiceRecognition}
           disabled={isListening}
-          className={`w-48 h-48 rounded-full text-white border-0 text-xl font-bold cursor-pointer mx-auto block shadow-2xl transition-all duration-300 ${
+          className={`w-48 h-48 rounded-full text-white border-0 text-xl font-bold cursor-pointer mx-auto block shadow-2xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300 ${
             isListening
-              ? 'bg-orange-500 animate-pulse cursor-not-allowed scale-110'
+              ? 'bg-blue-600 cursor-not-allowed scale-110 shadow-lg'
               : 'bg-red-600 hover:bg-red-700 hover:scale-105 hover:shadow-2xl active:scale-95'
           }`}
         >
