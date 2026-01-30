@@ -7,7 +7,7 @@ const ChatTab = ({ t, currentLanguage }) => {
 
   useEffect(() => {
     addMessage(t.greeting, 'bot')
-  }, [currentLanguage])
+  }, [])
 
   useEffect(() => {
     if (chatContainerRef.current) {

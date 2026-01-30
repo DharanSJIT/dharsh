@@ -1,10 +1,12 @@
-const Tabs = ({ activeTab, setActiveTab, t }) => {
+import { Link } from 'react-router-dom'
+
+const Tabs = ({ activeTab, t }) => {
   const tabs = [
-    { id: 'voice', label: t.tabVoice, icon: '🎤' },
-    { id: 'nutrition', label: t.tabNutrition, icon: '🥗' },
-    { id: 'emergency', label: t.tabEmergency, icon: '🚨' },
-    { id: 'health', label: t.tabHealth, icon: '💊' },
-    { id: 'chat', label: t.tabChat, icon: '💬' },
+    { id: 'voice', label: t.tabVoice, icon: '🎤', path: '/voice' },
+    { id: 'nutrition', label: t.tabNutrition, icon: '🥗', path: '/nutrition' },
+    { id: 'emergency', label: t.tabEmergency, icon: '🚨', path: '/emergency' },
+    { id: 'health', label: t.tabHealth, icon: '💊', path: '/health' },
+    { id: 'chat', label: t.tabChat, icon: '💬', path: '/chat' },
   ]
 
   return (
@@ -12,10 +14,10 @@ const Tabs = ({ activeTab, setActiveTab, t }) => {
       <div className="max-w-5xl mx-auto">
         <div className="flex overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => (
-            <button
+            <Link
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 min-w-0 px-6 py-4 text-center cursor-pointer border-b-3 text-sm font-semibold transition-all duration-200 whitespace-nowrap group ${
+              to={tab.path}
+              className={`flex-1 min-w-0 px-6 py-4 text-center cursor-pointer border-b-3 text-sm font-semibold transition-all duration-200 whitespace-nowrap group no-underline ${
                 activeTab === tab.id
                   ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm'
                   : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-800 hover:border-slate-300'
@@ -29,7 +31,7 @@ const Tabs = ({ activeTab, setActiveTab, t }) => {
                 </span>
                 <span className="font-medium">{tab.label}</span>
               </div>
-            </button>
+            </Link>
           ))}
         </div>
       </div>
